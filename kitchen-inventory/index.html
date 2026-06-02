@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KitchenOS — Inventory & Expiry Tracking</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">🍳</div>
+    <div>
+      <div class="logo-text">Kitchen<span>OS</span></div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="role-badge" onclick="toggleRole()" id="roleBadge">👨‍🍳 Staff</div>
+    <div class="btn-icon" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</div>
+    <div class="btn-icon" onclick="showToast('🔔','Notifications','You have unread alerts','warning')" title="Notifications">🔔</div>
+  </div>
+</header>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section class="section active" id="sec-dashboard">
+    <div style="margin-bottom:20px;">
+      <div class="section-title" style="font-size:1.3rem;">Good morning, Chef 👋</div>
+      <div class="section-sub">Here's your kitchen health report for today.</div>
+    </div>
+
+    <div class="cards-grid" id="statsCards"></div>
+
+    <div class="section-header">
+      <div><div class="section-title">Quick Actions</div></div>
+    </div>
+    <div class="quick-actions" style="grid-template-columns:1fr;">
+      <div class="qa-card" onclick="openModal('add')">
+        <div class="qa-icon">➕</div>
+        <div class="qa-title">Add Item</div>
+        <div class="qa-sub">Log a new product to inventory</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Recent Activity</div>
+      <span class="btn btn-ghost btn-sm" onclick="navigate('inventory')">View all →</span>
+    </div>
+    <div class="table-wrap" style="padding:4px 16px 8px;">
+      <div class="activity-list" id="activityList"></div>
+    </div>
+  </section>
+
+  <!-- INVENTORY -->
+  <section class="section" id="sec-inventory">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div>
+        <div class="section-title">Inventory</div>
+        <div class="section-sub" id="inventoryCount">Loading...</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('add')">＋ Add Item</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input class="search-box" placeholder="🔍  Search products..." id="searchInput" oninput="renderTable()"/>
+        <select class="filter-select" id="filterCat" onchange="renderTable()">
+          <option value="">All Categories</option>
+          <option>Dairy</option><option>Meat</option><option>Produce</option>
+          <option>Dry Goods</option><option>Sauces</option><option>Seafood</option>
+        </select>
+        <select class="filter-select" id="filterLoc" onchange="renderTable()">
+          <option value="">All Locations</option>
+          <option>Walk-in</option><option>Freezer</option><option>Pantry</option>
+        </select>
+        <select class="filter-select" id="filterStatus" onchange="renderTable()">
+          <option value="">All Status</option>
+          <option>Fresh</option><option>Warning</option><option>Expired</option>
+        </select>
+      </div>
+      <div class="table-scroll">
+        <table id="inventoryTable">
+          <thead>
+            <tr>
+              <th>Product</th><th>Category</th><th>Received</th>
+              <th>Expires</th><th>Qty</th><th>Location</th>
+              <th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTS -->
+  <section class="section" id="sec-alerts">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div>
+        <div class="section-title">Alerts</div>
+        <div class="section-sub">Items requiring immediate attention</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="renderAlerts()">↻ Refresh</button>
+    </div>
+    <div class="alert-list" id="alertList"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="section" id="sec-settings">
+    <div class="section-header" style="margin-bottom:16px;">
+      <div class="section-title">Settings</div>
+    </div>
+
+    <div class="settings-group-label">Appearance</div>
+    <div class="settings-list">
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-title">Dark Mode</div>
+          <div class="settings-item-sub">Toggle light/dark interface</div>
+        </div>
+        <div class="toggle on" id="darkToggle" onclick="toggleTheme()"></div>
+      </div>
+    </div>
+
+    <div class="settings-group-label" style="margin-top:16px;">Account</div>
+    <div class="settings-list">
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-title">Role</div>
+          <div class="settings-item-sub" id="settingsRoleDesc">Staff — view & mark items</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleRole()">Switch</button>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-title">Notifications</div>
+          <div class="settings-item-sub">Alert for items expiring &lt;48h</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+
+    <div class="settings-group-label" style="margin-top:16px;">Data</div>
+    <div class="settings-list" id="managerSettings">
+      <div class="settings-item" id="wasteReportRow" style="display:none;">
+        <div class="settings-item-left">
+          <div class="settings-item-title">Waste Report</div>
+          <div class="settings-item-sub">View expired/discarded items</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('waste')">View</button>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-left">
+          <div class="settings-item-title">Clear Expired Items</div>
+          <div class="settings-item-sub">Remove all expired records</div>
+        </div>
+        <button class="btn btn-rose btn-sm" id="clearExpiredBtn" style="display:none;" onclick="clearExpired()">Clear</button>
+        <span id="clearExpiredLocked" style="font-size:.76rem;color:var(--text3);">Manager only</span>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+      <div style="font-size:.78rem;color:var(--text3);font-family:var(--mono);">KitchenOS v1.0.0 · Kitchen Inventory Tracker</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Dashboard</div>
+  </div>
+  <div class="nav-item" onclick="navigate('inventory')" id="nav-inventory">
+    <div class="nav-icon">📦</div>
+    <div class="nav-label">Inventory</div>
+  </div>
+  <div class="nav-item" onclick="navigate('alerts')" id="nav-alerts">
+    <div class="nav-icon">🔔</div>
+    <div class="nav-label">Alerts</div>
+    <div class="nav-badge" id="alertBadge">0</div>
+  </div>
+  <div class="nav-item" onclick="navigate('settings')" id="nav-settings">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-label">Settings</div>
+  </div>
+</nav>
+
+</div>
+
+<!-- ADD ITEM MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">➕ Add Inventory Item</div>
+      <button class="modal-close" onclick="closeModal('add')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Product Name</label>
+        <div class="autocomplete-wrap">
+          <input class="form-input" id="itemName" placeholder="e.g. Heavy Cream" oninput="handleAutocomplete(this)" autocomplete="off"/>
+          <div class="autocomplete-list" id="autocompleteList"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="itemCat">
+            <option value="">Select...</option>
+            <option>Dairy</option><option>Meat</option><option>Produce</option>
+            <option>Dry Goods</option><option>Sauces</option><option>Seafood</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <select class="form-input" id="itemLoc">
+            <option value="">Select...</option>
+            <option>Walk-in</option><option>Freezer</option><option>Pantry</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Shelf Life Presets</label>
+        <div class="preset-chips" id="presetChips">
+          <div class="chip" onclick="applyPreset(this,1)">Opened Sauce · 1d</div>
+          <div class="chip" onclick="applyPreset(this,3)">Cut Produce · 3d</div>
+          <div class="chip" onclick="applyPreset(this,5)">Open Dairy · 5d</div>
+          <div class="chip" onclick="applyPreset(this,7)">Fresh Meat · 7d</div>
+          <div class="chip" onclick="applyPreset(this,30)">Dry Good · 30d</div>
+          <div class="chip" onclick="applyPreset(this,90)">Frozen · 90d</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date Received</label>
+          <input class="form-input" type="date" id="itemReceived"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expiry Date</label>
+          <input class="form-input" type="date" id="itemExpiry"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-input" type="number" id="itemQty" placeholder="e.g. 5" min="0" step="0.1"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <select class="form-input" id="itemUnit">
+            <option>kg</option><option>g</option><option>liters</option>
+            <option>ml</option><option>units</option><option>boxes</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" style="flex:1;" onclick="addItem()">Add to Inventory</button>
+        <button class="btn btn-ghost" onclick="closeModal('add')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WASTE REPORT MODAL -->
+<div class="modal-overlay" id="wasteModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <div class="modal-title">📋 Waste Report</div>
+      <button class="modal-close" onclick="closeModal('waste')">✕</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="report-table" id="wasteTable">
+        <thead><tr><th>Product</th><th>Category</th><th>Expired</th><th>Qty</th><th>Location</th></tr></thead>
+        <tbody id="wasteBody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;text-align:right;">
+      <button class="btn btn-ghost" onclick="closeModal('waste')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- scripts loaded at end so DOM is ready -->
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
