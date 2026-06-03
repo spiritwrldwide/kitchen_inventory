@@ -1,4 +1,4 @@
-# KitchenOS — Kitchen Inventory & Expiry Tracker
+# KitchenOS - Kitchen Inventory & Expiry Tracker
 
 A web-based application for tracking kitchen inventory and product expiry dates.
 Built with vanilla HTML, CSS and JavaScript (no frameworks required).
