@@ -1,4 +1,4 @@
-KitchenOS — Kitchen Inventory Tracker
+KitchenOS - Kitchen Inventory Tracker
 Web app for tracking kitchen stock and expiry dates. No frameworks, just HTML/CSS/JS.
 
 Files
