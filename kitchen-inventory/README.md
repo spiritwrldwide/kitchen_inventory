@@ -1,47 +1,28 @@
-# KitchenOS - Kitchen Inventory & Expiry Tracker
+KitchenOS — Kitchen Inventory Tracker
+Web app for tracking kitchen stock and expiry dates. No frameworks, just HTML/CSS/JS.
 
-A web-based application for tracking kitchen inventory and product expiry dates.
-Built with vanilla HTML, CSS and JavaScript (no frameworks required).
+Files
 
-## Project Structure
-
-```
 kitchen-inventory/
-├── index.html        # Main page / UI markup
-├── css/
-│   └── style.css     # All styles, dark/light theme variables
-└── js/
-    ├── db.js         # Data persistence layer (localStorage)
-    └── app.js        # Application logic, rendering, event handlers
-```
+index.html        # markup
+css/style.css     # styles + theme
+ js/
+    db.js         # localStorage read/write
+    app.js        # all app logic
+    
+Running
 
-## How to Run
+Open index.html in Firefox. Data saves automatically to localStorage between sessions.
 
-Open `index.html` in any modern browser. No server or build step needed.
+What it does
 
-Data is saved automatically to `localStorage` so it persists between sessions.
+Dashboard with stock summary (fresh / expiring / expired counts)
+Inventory table with search and filters
+Alerts for items expiring within 48h
+Two roles: Staff (view + mark used) and Manager (add/edit/delete + waste report)
+Dark/light theme
 
-## Features
-
-- **Dashboard** — overview stats (total, fresh, warning, expired items)
-- **Inventory table** — search and filter by category, location, status
-- **Alerts** — items expiring within 48 hours or already expired
-- **Role system** — Staff (view, mark used) vs Manager (edit, delete, waste report)
-- **Persistence** — all changes saved to localStorage automatically
-- **Dark/Light theme** toggle
-
-## Data Layer (`db.js`)
-
-`db.js` acts as a client-side database module:
-- `loadInventory()` / `saveInventory(items)` — read/write inventory array
-- `loadActivity()` / `saveActivity(log)` — read/write activity log
-- `clearStorage()` — reset all saved data
-- On first visit, seed data is loaded automatically
-
-## Main Logic (`app.js`)
-
-- `renderDashboard()` — updates stat cards and activity feed
-- `renderTable()` — filters and renders inventory rows
-- `renderAlerts()` — builds the alerts list
-- `addItem()` / `editItem()` / `deleteItem()` / `markUsed()` — CRUD operations
-- `toggleRole()` — switches between Staff and Manager views
+db.js
+Handles all localStorage access. loadInventory() / saveInventory() for the item list, same pair for the activity log. First visit seeds some sample data so the app isn't empty.
+app.js
+Rendering, event handlers, CRUD. Main functions: renderDashboard(), renderTable(), renderAlerts(), addItem(), editItem(), deleteItem(), markUsed().
